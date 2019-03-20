@@ -1,0 +1,6 @@
+[2019-03-21 01:25:42] [INFO   ] time was launched, current time: 2019-03-21T01:25:42.831327600 
+[2019-03-21 01:25:42] [INFO   ] pages buffer size: 3 
+[2019-03-21 01:25:42] [INFO   ] pages count: 1 
+[2019-03-21 01:25:42] [INFO   ] open file 'bin' 
+[2019-03-21 01:25:42] [INFO   ] write key words to file 
+[2019-03-21 01:25:42] [INFO   ] write 0 to mem file 
