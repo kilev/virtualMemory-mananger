@@ -1,5 +1,6 @@
 package com.kil;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,10 +23,10 @@ class Mem {
     private final int BUFFER_SIZE = 3;
     private final String path = "bin";
 
-    private FileOutputStream file = null;
+    private FileOutputStream fileOut = null;
+    private FileInputStream fileIn = null;
     private int array_size;
     private int page_count;
-    private page localPage;
     private page[] bufferPages = new page[BUFFER_SIZE];
     private static Logger log = Logger.getLogger(Mem.class.getName());// logger
     private Clock clock = Clock.system(ZoneId.systemDefault()); //clock
@@ -58,11 +59,12 @@ class Mem {
         log.info("pages count: " + page_count);
 
         openOutPutFile();//open/create bin file
+        openInPutFile();
 
         //write into the file "BM"
         try {
             byte[] buffer = KEY_WORDS.getBytes();
-            file.write(buffer);
+            fileOut.write(buffer);
             log.info("write key words to file");
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,55 +72,80 @@ class Mem {
 
         // load our buffer
         for (int i = 0; i < BUFFER_SIZE; i++) {
-            bufferPages[i] = new page(PAGE_NOINDEX);
+            bufferPages[i] = new page(i);
+            bufferPages[i].last_access = LocalDateTime.now(clock);
         }
-        localPage = bufferPages[0];
         for (int i = 0; i < page_count; i++) {
-            localPage.index = i;
+            bufferPages[0].index = i;
             //for tests
-            localPage.bitmap[0] = 1;
-            localPage.bitmap[BITMAP_SIZE-1] = 1;
-            localPage.data[0] = 31;
-            localPage.data[DATA_SIZE_ON_PAGE-1] = 31;
+            if (i == 7)
+                bufferPages[0].data[1] = 7;
+            if (i == 6)
+                bufferPages[0].data[1] = 6;
+            if (i == 5)
+                bufferPages[0].data[1] = 5;
+            bufferPages[0].bitmap[0] = 1;
+            bufferPages[0].bitmap[BITMAP_SIZE - 1] = 1;
+            bufferPages[0].data[0] = 31;
+            bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = 31;
             //for tests
-            writePageToFile();
-            localPage.isModified = true;
+            writePageToFile(0);
+            bufferPages[0].isModified = true;
+            readPageFromFile(6, 1);
+            readPageFromFile(7, 2);
         }
     }
 
-
-    private void writePageToFile() {
+    //writing page to file
+    private void writePageToFile(int indexInBuffer) {
         //перенести потом этот иф в функцию финдпэйдж!!
-        if (!localPage.isModified) {
+        if (!bufferPages[indexInBuffer].isModified) {
             return;
         }
         try {
-            int offset = BITMAP_SIZE * localPage.index + PAGE_SIZE * localPage.index + (KEY_WORDS).length();
-            FileChannel channel = file.getChannel().position(offset);
+            FileChannel channel = getFileChannel(bufferPages[indexInBuffer].index, "write");
 
-            for(int i : localPage.bitmap){
+            for (int i : bufferPages[indexInBuffer].bitmap) {
                 byte[] buff = ByteBuffer.allocate(1).put((byte) i).array();
                 channel.write(ByteBuffer.wrap(buff));
             }
-            for(int i : localPage.data){
+            for (int i : bufferPages[indexInBuffer].data) {
                 byte[] buff = ByteBuffer.allocate(4).putInt(i).array();
                 channel.write(ByteBuffer.wrap(buff));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        localPage.isModified = false;// reset page properties
-        log.info("write " + localPage.index + " to mem file");
+        bufferPages[indexInBuffer].isModified = false;// reset page properties
+        log.info("write " + bufferPages[indexInBuffer].index + " to mem file");
+    }
+
+    //reading page from file
+    private void readPageFromFile(int indexOfPage, int indexInBuffer) {
+        //channel.position(-4610);
+        //FileChannel channel = getFileChannel(indexOfPage, "read");
+        FileChannel channel = fileIn.getChannel();
+        try {
+//            for (int i : bufferPages[indexInBuffer].bitmap) {
+//                channel.read(ByteBuffer.allocateDirect(ByteBuffer.allocate(1).get(i)));
+//            }
+            for(int i = 0; i < bufferPages[indexInBuffer].data.length; i++){
+                ByteBuffer bb = ByteBuffer.allocate(4);
+                int read;
+                read = channel.read(bb);
+                System.out.println(read);
+            }
+//            ByteBuffer bb = ByteBuffer.allocate(4);
+//            int a = channel.read(bb);
+//            System.out.println(a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
-    private void readPageFromFile(int indexOfPage, int indexInBuffer){
-        int offset = BITMAP_SIZE * (localPage.index - 1) + PAGE_SIZE * (localPage.index - 1) + (KEY_WORDS).length();
-    }
-
-
-    private void findPage(int indexOfPage){
-        readPageFromFile(3,2);
+    private void findPage(int indexOfPage) {
+        readPageFromFile(3, 2);
     }
 
 
@@ -144,12 +171,41 @@ class Mem {
 
     }
 
+    //System functions:
+    //
+    //to get coordinates of the bitmap and data in file
+    private FileChannel getFileChannel(int indexOfPage, String type) {
+        try {
+            int offset = BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length();
+            if (type.equals("read")) {
+                FileChannel channel = fileIn.getChannel().position(offset);
+                return channel;
+            } else if (type.equals("write")) {
+                FileChannel channel = fileOut.getChannel().position(offset);
+                return channel;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-    //open the out put file
+    //open the output file
     private void openOutPutFile() {
         try {
-            file = new FileOutputStream(path, false);
-            log.info("open file '" + path + "'");
+            fileOut = new FileOutputStream(path, false);
+            log.info("open file to write'" + path + "'");
+
+        } catch (FileNotFoundException e) {
+            log.info(e.getMessage());
+        }
+    }
+
+    //open the input file
+    private void openInPutFile() {
+        try {
+            fileIn = new FileInputStream(path);
+            log.info("open file to read '" + path + "'");
 
         } catch (FileNotFoundException e) {
             log.info(e.getMessage());
