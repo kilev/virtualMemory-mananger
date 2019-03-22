@@ -78,22 +78,18 @@ class Mem {
         for (int i = 0; i < page_count; i++) {
             bufferPages[0].index = i;
             //for tests
-            if (i == 7)
-                bufferPages[0].data[1] = 7;
-            if (i == 6)
-                bufferPages[0].data[1] = 6;
-            if (i == 5)
-                bufferPages[0].data[1] = 5;
-            bufferPages[0].bitmap[0] = 1;
-            bufferPages[0].bitmap[BITMAP_SIZE - 1] = 1;
-            bufferPages[0].data[0] = 31;
-            bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = 31;
+            bufferPages[0].bitmap[0] = i + 1;
+            bufferPages[0].bitmap[BITMAP_SIZE - 1] = i + 1;
+            bufferPages[0].data[0] = i + 1;
+            bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = i + 1;
             //for tests
             writePageToFile(0);
             bufferPages[0].isModified = true;
-            readPageFromFile(6, 1);
-            readPageFromFile(7, 2);
         }
+//        bufferPages[0].index = 0;
+//        bufferPages[0].bitmap[1] = 1;
+//        bufferPages[0].bitmap[2] = 2;
+//        writePageToFile(0);
     }
 
     //writing page to file
@@ -129,7 +125,7 @@ class Mem {
 //            for (int i : bufferPages[indexInBuffer].bitmap) {
 //                channel.read(ByteBuffer.allocateDirect(ByteBuffer.allocate(1).get(i)));
 //            }
-            for(int i = 0; i < bufferPages[indexInBuffer].data.length; i++){
+            for (int i = 0; i < bufferPages[indexInBuffer].data.length; i++) {
                 ByteBuffer bb = ByteBuffer.allocate(4);
                 int read;
                 read = channel.read(bb);
@@ -155,7 +151,6 @@ class Mem {
             throw new Error("index beyond the array size");
         }
         int page_index = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
-
     }
 
 

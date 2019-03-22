@@ -1,14 +1,14 @@
-[2019-03-21 17:21:34] [INFO   ] time was launched, current time: 2019-03-21T17:21:34.773182800 
-[2019-03-21 17:21:34] [INFO   ] pages buffer size: 3 
-[2019-03-21 17:21:34] [INFO   ] pages count: 8 
-[2019-03-21 17:21:34] [INFO   ] open file to write'bin' 
-[2019-03-21 17:21:34] [INFO   ] open file to read 'bin' 
-[2019-03-21 17:21:34] [INFO   ] write key words to file 
-[2019-03-21 17:21:34] [INFO   ] write 0 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 1 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 2 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 3 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 4 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 5 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 6 to mem file 
-[2019-03-21 17:21:34] [INFO   ] write 7 to mem file 
+[2019-03-22 13:17:02] [INFO   ] time was launched, current time: 2019-03-22T13:17:02.566215500 
+[2019-03-22 13:17:02] [INFO   ] pages buffer size: 3 
+[2019-03-22 13:17:02] [INFO   ] pages count: 8 
+[2019-03-22 13:17:02] [INFO   ] open file to write'bin' 
+[2019-03-22 13:17:02] [INFO   ] open file to read 'bin' 
+[2019-03-22 13:17:02] [INFO   ] write key words to file 
+[2019-03-22 13:17:02] [INFO   ] write 0 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 1 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 2 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 3 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 4 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 5 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 6 to mem file 
+[2019-03-22 13:17:02] [INFO   ] write 7 to mem file 
