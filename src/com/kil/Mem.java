@@ -86,10 +86,7 @@ class Mem {
             writePageToFile(0);
             bufferPages[0].isModified = true;
         }
-//        bufferPages[0].index = 0;
-//        bufferPages[0].bitmap[1] = 1;
-//        bufferPages[0].bitmap[2] = 2;
-//        writePageToFile(0);
+        writePageToFile(0);
     }
 
     //writing page to file
@@ -98,6 +95,8 @@ class Mem {
         if (!bufferPages[indexInBuffer].isModified) {
             return;
         }
+        if(indexInBuffer >= BUFFER_SIZE)
+            System.err.println("index beyond the array size");
         try {
             FileChannel channel = getFileChannel(bufferPages[indexInBuffer].index, "write");
 
@@ -118,10 +117,8 @@ class Mem {
 
     //reading page from file
     private void readPageFromFile(int indexOfPage, int indexInBuffer) {
-        //channel.position(-4610);
-        //FileChannel channel = getFileChannel(indexOfPage, "read");
-        FileChannel channel = fileIn.getChannel();
         try {
+            FileChannel channel = fileIn.getChannel();
 //            for (int i : bufferPages[indexInBuffer].bitmap) {
 //                channel.read(ByteBuffer.allocateDirect(ByteBuffer.allocate(1).get(i)));
 //            }
@@ -131,9 +128,6 @@ class Mem {
                 read = channel.read(bb);
                 System.out.println(read);
             }
-//            ByteBuffer bb = ByteBuffer.allocate(4);
-//            int a = channel.read(bb);
-//            System.out.println(a);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,11 +167,9 @@ class Mem {
         try {
             int offset = BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length();
             if (type.equals("read")) {
-                FileChannel channel = fileIn.getChannel().position(offset);
-                return channel;
+                return fileIn.getChannel().position(offset);
             } else if (type.equals("write")) {
-                FileChannel channel = fileOut.getChannel().position(offset);
-                return channel;
+                return fileOut.getChannel().position(offset);
             }
         } catch (IOException e) {
             e.printStackTrace();
