@@ -93,6 +93,59 @@ class Mem {
         System.out.println("finish");
     }
 
+
+    //find and update page in buffer if it's necessary
+    private int findPage(int indexOfPage) {
+
+        //buffer page check
+        for (int i = 0; i < bufferPages.length; i++) {
+            if (bufferPages[i].index == indexOfPage)
+                return i;
+        }
+
+        //find latest page in buffer
+        LocalDateTime latest = bufferPages[0].last_access;
+        int indexBufOfLast = 0;
+        for (int i = 0; i < bufferPages.length; i++) {
+            if (bufferPages[i].last_access.isBefore(latest)) {
+                latest = bufferPages[i].last_access;
+                indexBufOfLast = i;
+            }
+        }
+
+        //load page
+        if (bufferPages[indexBufOfLast].isModified) {
+            writePageToFile(indexBufOfLast);
+            readPageFromFile(indexOfPage, indexBufOfLast);
+        } else {
+            readPageFromFile(indexOfPage, indexBufOfLast);
+        }
+        return indexBufOfLast;
+    }
+
+
+    //write the number
+    void writeNumber(int number, int index) {
+        if (index > array_size) {
+            throw new Error("index beyond the array size");
+        }
+        int page_index = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
+    }
+
+
+    //read index page
+    int read(int index) {
+
+        return 0;
+    }
+
+
+    //sync index page
+    void _sync_page(int page_index) {
+
+    }
+
+
     //writing page to file
     private void writePageToFile(int indexInBuffer) {
         //перенести потом этот иф в функцию финдпэйдж!!
@@ -121,6 +174,7 @@ class Mem {
         log.info("write " + bufferPages[indexInBuffer].index + " to mem file");
     }
 
+
     //reading page from file
     private void readPageFromFile(int indexOfPage, int indexInBuffer) {
         try {
@@ -139,38 +193,12 @@ class Mem {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        log.info("read " + indexOfPage + " to buffer page " + indexInBuffer + " mem file");
+        bufferPages[indexInBuffer].index = indexOfPage;
+        log.info("read " + indexOfPage + " to buffer page " + indexInBuffer + " from mem file");
     }
 
 
-    private void findPage(int indexOfPage) {
-        for (Page page: bufferPages) {
-            //if ()
-        }
-    }
-
-
-    //write the number
-    void writeNumber(int number, int index) {
-        if (index > array_size) {
-            throw new Error("index beyond the array size");
-        }
-        int page_index = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
-    }
-
-
-    //read index page
-    int read(int index) {
-
-        return 0;
-    }
-
-
-    //sync index page
-    void _sync_page(int page_index) {
-
-    }
-
+    //
     //System functions:
     //
 
