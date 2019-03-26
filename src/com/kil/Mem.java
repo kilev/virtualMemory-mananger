@@ -17,9 +17,8 @@ class Mem {
 
     private final int PAGE_SIZE = 512; // in bytes
     private final int BITMAP_SIZE = PAGE_SIZE / 8; // 1 data byte -> 1 bitmap bit
-    private final int DATA_SIZE_ON_PAGE = PAGE_SIZE / 4; // int32_t as base type
+    private final int DATA_SIZE_ON_PAGE = PAGE_SIZE / 4; // int32 as base type
     private final String KEY_WORDS = "BM";
-    private final int PAGE_NOINDEX = Integer.MAX_VALUE;
     private final int BUFFER_SIZE = 3;
     private final String path = "bin";
 
@@ -70,27 +69,73 @@ class Mem {
             e.printStackTrace();
         }
 
-
         // load our buffer
         for (int i = 0; i < BUFFER_SIZE; i++) {
             bufferPages[i] = new Page(i);
             bufferPages[i].last_access = LocalDateTime.now(clock);
         }
+
+        //fill stock file
         for (int i = 0; i < page_count; i++) {
             bufferPages[0].index = i;
             //for tests
             //
             bufferPages[0].bitmap[1] = 14;
+            bufferPages[0].bitmap[BITMAP_SIZE - 2] = 14;
             //
             bufferPages[0].bitmap[0] = i;
             bufferPages[0].bitmap[BITMAP_SIZE - 1] = i;
             bufferPages[0].data[0] = i;
             bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = i;
             //for tests
+            //for tests
+            //
+            bufferPages[1].bitmap[1] = 14;
+            bufferPages[1].bitmap[BITMAP_SIZE - 2] = 14;
+            //
+            bufferPages[1].bitmap[0] = 1;
+            bufferPages[1].bitmap[BITMAP_SIZE - 1] = 1;
+            bufferPages[1].data[0] = 1;
+            bufferPages[1].data[DATA_SIZE_ON_PAGE - 1] = 1;
+            //for tests
+            //for tests
+            //
+            bufferPages[2].bitmap[1] = 14;
+            bufferPages[2].bitmap[BITMAP_SIZE - 2] = 14;
+            //
+            bufferPages[2].bitmap[0] = 2;
+            bufferPages[2].bitmap[BITMAP_SIZE - 1] = 2;
+            bufferPages[2].data[0] = 2;
+            bufferPages[2].data[DATA_SIZE_ON_PAGE - 1] = 2;
+            //for tests
             writePageToFile(0);
             bufferPages[0].isModified = true;
         }
-        System.out.println("finish");
+    }
+
+
+    //write the number by index
+    void writeNumber(int number, int index) {
+        if (index > array_size) {
+            log.info("index beyond the array size");
+        }
+
+        int pageIndex = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
+        int indexOnPage = index - (DATA_SIZE_ON_PAGE * pageIndex);
+
+        int bufIndex = findPage(pageIndex);
+        bufferPages[bufIndex].data[indexOnPage] = number;
+        bufferPages[bufIndex].isModified = true;
+        bufferPages[bufIndex].last_access = LocalDateTime.now(clock);
+        log.info("number:" + number + " was written with index:" + index + " in page number:" + pageIndex + " with local index:" + indexOnPage);
+    }
+    // add bitmap redaction!
+
+
+    //read the number by index
+    int read(int index) {
+
+        return 0;
     }
 
 
@@ -124,36 +169,10 @@ class Mem {
     }
 
 
-    //write the number
-    void writeNumber(int number, int index) {
-        if (index > array_size) {
-            throw new Error("index beyond the array size");
-        }
-        int page_index = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
-    }
-
-
-    //read index page
-    int read(int index) {
-
-        return 0;
-    }
-
-
-    //sync index page
-    void _sync_page(int page_index) {
-
-    }
-
-
     //writing page to file
     private void writePageToFile(int indexInBuffer) {
-        //перенести потом этот иф в функцию финдпэйдж!!
-        if (!bufferPages[indexInBuffer].isModified) {
-            return;
-        }
         if (indexInBuffer >= BUFFER_SIZE)
-            System.err.println("index beyond the array size");
+            System.out.println("index beyond the array size in function 'writePageToFile'");
         try {
             int index = bufferPages[indexInBuffer].index;
             FileChannel channel = fileOut.getChannel().position(BITMAP_SIZE * (index) + PAGE_SIZE * (index) + (KEY_WORDS).length());
@@ -171,8 +190,9 @@ class Mem {
             e.printStackTrace();
         }
         bufferPages[indexInBuffer].isModified = false;// reset page properties
-        log.info("write " + bufferPages[indexInBuffer].index + " to mem file");
+        log.info("write page" + bufferPages[indexInBuffer].index);
     }
+    //add bitmap writing!
 
 
     //reading page from file
@@ -193,9 +213,11 @@ class Mem {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        bufferPages[indexInBuffer].last_access =  LocalDateTime.now(clock);
         bufferPages[indexInBuffer].index = indexOfPage;
-        log.info("read " + indexOfPage + " to buffer page " + indexInBuffer + " from mem file");
+        log.info("read page:" + indexOfPage + " to buffer[" + indexInBuffer + "]");
     }
+    //add bitmap reading!
 
 
     //

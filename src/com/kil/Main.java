@@ -26,7 +26,7 @@ public class Main {
         try {
             final Random random = new Random();
 
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < size / 2; ++i) {
                 int index = (int) (Math.random() * size);
                 int number = random.nextInt();
                 System.out.println("memory[" + index + "] = " + Integer.toUnsignedLong(number) + "\n");
@@ -52,9 +52,8 @@ public class Main {
         log = Logger.getLogger(Mem.class.getName());
     }
 
-    //read all data from memory
+    //read all data
     private static void readAll() {
-        //read all memory data
         for (Integer i = 0; i < size; ++i) {
             System.out.println("memory[" + i + "] = " + mem.read(i) + "\n");
         }
