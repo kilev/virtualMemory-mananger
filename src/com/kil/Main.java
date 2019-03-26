@@ -29,7 +29,7 @@ public class Main {
             for (int i = 0; i < size / 2; ++i) {
                 int index = (int) (Math.random() * size);
                 int number = random.nextInt();
-                System.out.println("memory[" + index + "] = " + Integer.toUnsignedLong(number) + "\n");
+                System.out.println("memory[" + index + "] = " + number + "\n");
                 mem.writeNumber(number, index);
             }
             System.out.println("\n\n");
@@ -37,7 +37,7 @@ public class Main {
             log.info(e.getMessage());
         }
 
-        //readAll();
+        readAll();
     }
 
 

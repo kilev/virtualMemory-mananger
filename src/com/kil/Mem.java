@@ -25,7 +25,6 @@ class Mem {
     private FileOutputStream fileOut = null;
     private FileInputStream fileIn = null;
     private int array_size;
-    private int page_count;
     private Page[] bufferPages = new Page[BUFFER_SIZE];
     private static Logger log = Logger.getLogger(Mem.class.getName());// logger
     private Clock clock = Clock.system(ZoneId.systemDefault()); //clock
@@ -53,7 +52,7 @@ class Mem {
         log.info("time was launched, current time: " + time.toString());
 
         array_size = size;
-        page_count = (int) Math.ceil((double) size / DATA_SIZE_ON_PAGE);
+        int page_count = (int) Math.ceil((double) size / DATA_SIZE_ON_PAGE);
         log.info("pages buffer size: " + BUFFER_SIZE);
         log.info("pages count: " + page_count);
 
@@ -116,9 +115,8 @@ class Mem {
 
     //write the number by index
     void writeNumber(int number, int index) {
-        if (index > array_size) {
-            log.info("index beyond the array size");
-        }
+        if (index > array_size)
+            System.err.println("index beyond the array size");
 
         int pageIndex = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
         int indexOnPage = index - (DATA_SIZE_ON_PAGE * pageIndex);
@@ -134,8 +132,19 @@ class Mem {
 
     //read the number by index
     int read(int index) {
+        if (index > array_size)
+            System.err.println("index beyond the array size");
 
-        return 0;
+        int pageIndex = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
+        int indexOnPage = index - (DATA_SIZE_ON_PAGE * pageIndex);
+
+        int bufIndex = findPage(pageIndex);
+
+        int result = bufferPages[bufIndex].data[indexOnPage];
+        bufferPages[bufIndex].last_access = LocalDateTime.now(clock);
+        //log.info("");
+
+        return result;
     }
 
 
@@ -213,7 +222,7 @@ class Mem {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        bufferPages[indexInBuffer].last_access =  LocalDateTime.now(clock);
+        bufferPages[indexInBuffer].last_access = LocalDateTime.now(clock);
         bufferPages[indexInBuffer].index = indexOfPage;
         log.info("read page:" + indexOfPage + " to buffer[" + indexInBuffer + "]");
     }
