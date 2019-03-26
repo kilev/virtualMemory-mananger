@@ -118,6 +118,7 @@ class Mem {
         if (index > array_size)
             System.err.println("index beyond the array size");
 
+        //position determination
         int pageIndex = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
         int indexOnPage = index - (DATA_SIZE_ON_PAGE * pageIndex);
 
@@ -135,6 +136,7 @@ class Mem {
         if (index > array_size)
             System.err.println("index beyond the array size");
 
+        //position determination
         int pageIndex = (int) Math.floor((double) index / DATA_SIZE_ON_PAGE);
         int indexOnPage = index - (DATA_SIZE_ON_PAGE * pageIndex);
 
@@ -142,7 +144,7 @@ class Mem {
 
         int result = bufferPages[bufIndex].data[indexOnPage];
         bufferPages[bufIndex].last_access = LocalDateTime.now(clock);
-        //log.info("");
+        log.info("number:" + result + " has been read from index:" + index);
 
         return result;
     }
@@ -175,6 +177,13 @@ class Mem {
             readPageFromFile(indexOfPage, indexBufOfLast);
         }
         return indexBufOfLast;
+    }
+
+    public void sync(){
+        for(int i = 0; i < bufferPages.length; i++){
+            bufferPages[i].isModified = true;
+            writePageToFile(i);
+        }
     }
 
 
