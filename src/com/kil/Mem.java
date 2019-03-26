@@ -70,6 +70,7 @@ class Mem {
             e.printStackTrace();
         }
 
+
         // load our buffer
         for (int i = 0; i < BUFFER_SIZE; i++) {
             bufferPages[i] = new page(i);
@@ -78,15 +79,21 @@ class Mem {
         for (int i = 0; i < page_count; i++) {
             bufferPages[0].index = i;
             //for tests
-            bufferPages[0].bitmap[0] = i + 1;
-            bufferPages[0].bitmap[BITMAP_SIZE - 1] = i + 1;
-            bufferPages[0].data[0] = i + 1;
-            bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = i + 1;
+            //
+            bufferPages[0].bitmap[1] = 14;
+            //
+            bufferPages[0].bitmap[0] = i;
+            bufferPages[0].bitmap[BITMAP_SIZE - 1] = i;
+            bufferPages[0].data[0] = i;
+            bufferPages[0].data[DATA_SIZE_ON_PAGE - 1] = i;
             //for tests
             writePageToFile(0);
             bufferPages[0].isModified = true;
         }
-        writePageToFile(0);
+        //
+        readPageFromFile(7, 2);
+        //
+        System.out.println("finish");
     }
 
     //writing page to file
@@ -95,7 +102,7 @@ class Mem {
         if (!bufferPages[indexInBuffer].isModified) {
             return;
         }
-        if(indexInBuffer >= BUFFER_SIZE)
+        if (indexInBuffer >= BUFFER_SIZE)
             System.err.println("index beyond the array size");
         try {
             FileChannel channel = getFileChannel(bufferPages[indexInBuffer].index, "write");
@@ -108,6 +115,7 @@ class Mem {
                 byte[] buff = ByteBuffer.allocate(4).putInt(i).array();
                 channel.write(ByteBuffer.wrap(buff));
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -117,17 +125,13 @@ class Mem {
 
     //reading page from file
     private void readPageFromFile(int indexOfPage, int indexInBuffer) {
+        byte[] r = new byte[64];//tests values
         try {
-            FileChannel channel = fileIn.getChannel();
-//            for (int i : bufferPages[indexInBuffer].bitmap) {
-//                channel.read(ByteBuffer.allocateDirect(ByteBuffer.allocate(1).get(i)));
-//            }
-            for (int i = 0; i < bufferPages[indexInBuffer].data.length; i++) {
-                ByteBuffer bb = ByteBuffer.allocate(4);
-                int read;
-                read = channel.read(bb);
-                System.out.println(read);
-            }
+            FileChannel ch = fileIn.getChannel();//get channel
+            ch.position(BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length());//устанавливаем канал на нужную позицию
+            fileIn.read(r);
+            for(int i = 0; i < r.length;i++)
+                System.out.println(r[i]);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -166,9 +170,7 @@ class Mem {
     private FileChannel getFileChannel(int indexOfPage, String type) {
         try {
             int offset = BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length();
-            if (type.equals("read")) {
-                return fileIn.getChannel().position(offset);
-            } else if (type.equals("write")) {
+            if (type.equals("write")) {
                 return fileOut.getChannel().position(offset);
             }
         } catch (IOException e) {

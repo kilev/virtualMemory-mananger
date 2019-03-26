@@ -37,7 +37,7 @@ public class Main {
             log.info(e.getMessage());
         }
 
-        readAll();
+        //readAll();
     }
 
 
