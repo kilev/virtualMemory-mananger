@@ -27,19 +27,19 @@ class Mem {
     private FileInputStream fileIn = null;
     private int array_size;
     private int page_count;
-    private page[] bufferPages = new page[BUFFER_SIZE];
+    private Page[] bufferPages = new Page[BUFFER_SIZE];
     private static Logger log = Logger.getLogger(Mem.class.getName());// logger
     private Clock clock = Clock.system(ZoneId.systemDefault()); //clock
 
 
-    class page {
+    class Page {
         int index;
         boolean isModified;
         LocalDateTime last_access;
         int[] bitmap = new int[BITMAP_SIZE];
         int[] data = new int[DATA_SIZE_ON_PAGE];
 
-        page(int index) {
+        Page(int index) {
             isModified = true;
             this.index = index;
             Arrays.fill(bitmap, 0);
@@ -58,10 +58,10 @@ class Mem {
         log.info("pages buffer size: " + BUFFER_SIZE);
         log.info("pages count: " + page_count);
 
-        openOutPutFile();//open/create bin file
-        openInPutFile();
+        openOutPutFile();//open/create bin file for write
+        openInPutFile();// open file to read
 
-        //write into the file "BM"
+        //write "BM" into the file
         try {
             byte[] buffer = KEY_WORDS.getBytes();
             fileOut.write(buffer);
@@ -73,7 +73,7 @@ class Mem {
 
         // load our buffer
         for (int i = 0; i < BUFFER_SIZE; i++) {
-            bufferPages[i] = new page(i);
+            bufferPages[i] = new Page(i);
             bufferPages[i].last_access = LocalDateTime.now(clock);
         }
         for (int i = 0; i < page_count; i++) {
@@ -90,9 +90,6 @@ class Mem {
             writePageToFile(0);
             bufferPages[0].isModified = true;
         }
-        //
-        readPageFromFile(7, 2);
-        //
         System.out.println("finish");
     }
 
@@ -105,7 +102,8 @@ class Mem {
         if (indexInBuffer >= BUFFER_SIZE)
             System.err.println("index beyond the array size");
         try {
-            FileChannel channel = getFileChannel(bufferPages[indexInBuffer].index, "write");
+            int index = bufferPages[indexInBuffer].index;
+            FileChannel channel = fileOut.getChannel().position(BITMAP_SIZE * (index) + PAGE_SIZE * (index) + (KEY_WORDS).length());
 
             for (int i : bufferPages[indexInBuffer].bitmap) {
                 byte[] buff = ByteBuffer.allocate(1).put((byte) i).array();
@@ -125,21 +123,30 @@ class Mem {
 
     //reading page from file
     private void readPageFromFile(int indexOfPage, int indexInBuffer) {
-        byte[] r = new byte[64];//tests values
         try {
             FileChannel ch = fileIn.getChannel();//get channel
-            ch.position(BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length());//устанавливаем канал на нужную позицию
-            fileIn.read(r);
-            for(int i = 0; i < r.length;i++)
-                System.out.println(r[i]);
+            ch.position(BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length());//set position
+            for (int i = 0; i < bufferPages[indexInBuffer].bitmap.length; i++) {
+                int k = fileIn.read();
+                bufferPages[indexInBuffer].bitmap[i] = k;
+            }
+            for (int i = 0; i < bufferPages[indexInBuffer].data.length; i++) {
+                byte[] bt = new byte[4];
+                fileIn.read(bt);
+                ByteBuffer wrapped = ByteBuffer.wrap(bt); // big-endian by default
+                bufferPages[indexInBuffer].data[i] = wrapped.getInt();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("read " + indexOfPage + " to buffer page " + indexInBuffer + " mem file");
     }
 
 
     private void findPage(int indexOfPage) {
-        readPageFromFile(3, 2);
+        for (Page page: bufferPages) {
+            //if ()
+        }
     }
 
 
@@ -166,18 +173,6 @@ class Mem {
 
     //System functions:
     //
-    //to get coordinates of the bitmap and data in file
-    private FileChannel getFileChannel(int indexOfPage, String type) {
-        try {
-            int offset = BITMAP_SIZE * (indexOfPage) + PAGE_SIZE * (indexOfPage) + (KEY_WORDS).length();
-            if (type.equals("write")) {
-                return fileOut.getChannel().position(offset);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     //open the output file
     private void openOutPutFile() {
